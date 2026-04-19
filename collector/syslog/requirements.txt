@@ -1,0 +1,5 @@
+# Dependências do coletor de logs
+# Instale com: pip install -r requirements.txt
+
+# python-dotenv — carrega variáveis do arquivo .env automaticamente
+python-dotenv==1.0.1

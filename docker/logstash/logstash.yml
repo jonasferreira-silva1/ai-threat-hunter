@@ -1,0 +1,14 @@
+# =============================================================
+# Configuração do Logstash
+# =============================================================
+
+# Endereço de monitoramento interno do Logstash
+http.host: "0.0.0.0"
+http.port: 9600
+
+# Nível de log — use "info" em produção, "debug" para investigar problemas
+log.level: info
+
+# Intervalo de verificação de mudanças no pipeline (em segundos)
+config.reload.automatic: true
+config.reload.interval: 30s

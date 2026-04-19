@@ -1,0 +1,32 @@
+# =============================================================
+# Configuração do Elasticsearch
+# Nó único para ambiente de laboratório/desenvolvimento
+# =============================================================
+
+# Nome do cluster — identifica o ambiente
+cluster.name: threat-hunter-cluster
+
+# Nome do nó dentro do cluster
+node.name: threat-hunter-node-01
+
+# Modo single-node: desativa a necessidade de quorum entre nós
+discovery.type: single-node
+
+# Endereço de escuta — 0.0.0.0 permite acesso de outros containers
+network.host: 0.0.0.0
+
+# Porta padrão da API REST do Elasticsearch
+http.port: 9200
+
+# =============================================================
+# Segurança
+# Em produção, habilite TLS e autenticação forte
+# =============================================================
+xpack.security.enabled: true
+xpack.security.http.ssl.enabled: false  # SSL desabilitado no lab (HTTP puro)
+
+# =============================================================
+# Memória e performance
+# =============================================================
+# Evita swap de memória — importante para performance em produção
+bootstrap.memory_lock: true

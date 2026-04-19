@@ -1,0 +1,26 @@
+# =============================================================
+# Configuração do Kibana
+# Interface visual para análise dos eventos de segurança
+# =============================================================
+
+# Porta onde o Kibana vai escutar
+server.port: 5601
+
+# Aceita conexões de qualquer origem (necessário dentro do Docker)
+server.host: "0.0.0.0"
+
+# Nome exibido na interface do Kibana
+server.name: "AI Threat Hunter - Dashboard"
+
+# =============================================================
+# Conexão com o Elasticsearch
+# O hostname "elasticsearch" é resolvido pela rede Docker
+# =============================================================
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "${KIBANA_PASSWORD}"
+
+# =============================================================
+# Idioma e fuso horário
+# =============================================================
+i18n.locale: "en"

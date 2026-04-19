@@ -1,0 +1,163 @@
+# =============================================================
+# Docker Compose — AI-Powered Threat Hunter
+# Infraestrutura completa do ELK Stack para laboratório
+#
+# Serviços:
+#   - elasticsearch  → armazena e indexa todos os eventos
+#   - logstash       → recebe, normaliza e encaminha os logs
+#   - kibana         → dashboard visual para análise
+#   - setup          → inicializa usuários e permissões (roda uma vez)
+#
+# Uso:
+#   Subir:   docker-compose up -d
+#   Parar:   docker-compose down
+#   Logs:    docker-compose logs -f [serviço]
+# =============================================================
+
+version: "3.8"
+
+# -------------------------------------------------------------
+# Variáveis reutilizadas entre serviços via YAML anchors
+# -------------------------------------------------------------
+x-elk-version: &elk-version
+  image: docker.elastic.co/elasticsearch/elasticsearch:${ELK_VERSION}
+
+# -------------------------------------------------------------
+# Rede interna isolada para comunicação entre os containers
+# -------------------------------------------------------------
+networks:
+  threat-hunter-net:
+    driver: bridge
+
+# -------------------------------------------------------------
+# Volumes persistentes — dados sobrevivem ao restart dos containers
+# -------------------------------------------------------------
+volumes:
+  elasticsearch-data:
+    driver: local
+
+# =============================================================
+# SERVIÇOS
+# =============================================================
+services:
+
+  # -----------------------------------------------------------
+  # SETUP — Inicialização única de usuários e senhas
+  # Roda, configura tudo e encerra. Não fica em pé.
+  # -----------------------------------------------------------
+  setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELK_VERSION}
+    container_name: threat-hunter-setup
+    networks:
+      - threat-hunter-net
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      KIBANA_PASSWORD: ${ELASTIC_PASSWORD}   # Simplificado para o lab
+    # Aguarda o Elasticsearch estar pronto, depois configura as senhas
+    command: >
+      bash -c '
+        echo "Aguardando Elasticsearch inicializar...";
+        until curl -s -u elastic:${ELASTIC_PASSWORD} http://elasticsearch:9200 | grep -q "cluster_name"; do
+          sleep 5;
+        done;
+        echo "Elasticsearch pronto. Configurando senha do kibana_system...";
+        curl -s -X POST -u elastic:${ELASTIC_PASSWORD} \
+          -H "Content-Type: application/json" \
+          http://elasticsearch:9200/_security/user/kibana_system/_password \
+          -d "{\"password\": \"${ELASTIC_PASSWORD}\"}";
+        echo "Setup concluido.";
+      '
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  # -----------------------------------------------------------
+  # ELASTICSEARCH — Banco de dados e motor de busca dos eventos
+  # -----------------------------------------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELK_VERSION}
+    container_name: threat-hunter-elasticsearch
+    networks:
+      - threat-hunter-net
+    ports:
+      - "${ELASTIC_PORT}:9200"   # API REST acessível no host
+    environment:
+      # Credenciais
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      # Modo single-node para laboratório
+      discovery.type: single-node
+      # Desabilita SSL no lab para simplificar (habilitar em produção)
+      xpack.security.http.ssl.enabled: "false"
+      xpack.security.enabled: "true"
+      # Limite de memória da JVM — ajuste conforme RAM disponível
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    volumes:
+      # Dados persistidos fora do container
+      - elasticsearch-data:/usr/share/elasticsearch/data
+      # Configuração customizada
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    # Verifica se o Elasticsearch está respondendo antes de liberar dependentes
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:${ELASTIC_PASSWORD} http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    restart: unless-stopped
+
+  # -----------------------------------------------------------
+  # LOGSTASH — Pipeline de ingestão e normalização de logs
+  # -----------------------------------------------------------
+  logstash:
+    image: docker.elastic.co/logstash/logstash:${ELK_VERSION}
+    container_name: threat-hunter-logstash
+    networks:
+      - threat-hunter-net
+    ports:
+      - "${LOGSTASH_PORT_TCP}:5044"   # Entrada TCP (coletor Python)
+      - "${LOGSTASH_PORT_UDP}:5045/udp" # Entrada UDP (Zeek/Suricata)
+      - "${LOGSTASH_PORT_HTTP}:8080"  # Entrada HTTP (testes/integrações)
+      - "9600:9600"                   # API de monitoramento do Logstash
+    environment:
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      LS_JAVA_OPTS: "-Xms256m -Xmx256m"
+    volumes:
+      # Pipeline de processamento
+      - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      # Configuração geral
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # -----------------------------------------------------------
+  # KIBANA — Interface visual para análise dos eventos
+  # Acesse: http://localhost:5601
+  # Login: elastic / (senha definida em ELASTIC_PASSWORD no .env)
+  # -----------------------------------------------------------
+  kibana:
+    image: docker.elastic.co/kibana/kibana:${ELK_VERSION}
+    container_name: threat-hunter-kibana
+    networks:
+      - threat-hunter-net
+    ports:
+      - "${KIBANA_PORT}:5601"   # Interface web acessível no host
+    environment:
+      KIBANA_PASSWORD: ${ELASTIC_PASSWORD}
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+      ELASTICSEARCH_USERNAME: "kibana_system"
+      ELASTICSEARCH_PASSWORD: ${ELASTIC_PASSWORD}
+    volumes:
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q 'available'"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+    restart: unless-stopped

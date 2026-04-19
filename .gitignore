@@ -1,0 +1,25 @@
+# =============================================================
+# Arquivos ignorados pelo Git
+# =============================================================
+
+# Variáveis de ambiente com credenciais reais
+.env.local
+.env.production
+
+# Dados persistidos pelos containers (gerados em runtime)
+docker/elasticsearch/data/
+docker/kibana/data/
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Logs locais gerados durante testes
+*.log
+
+# Datasets de ML (arquivos grandes — usar Git LFS ou link externo)
+ml/datasets/*.csv
+ml/datasets/*.pcap
