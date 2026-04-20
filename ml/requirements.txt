@@ -1,0 +1,19 @@
+# Dependências do módulo de Machine Learning
+# Instale com: pip install -r requirements.txt
+
+# Modelos e utilitários de ML
+scikit-learn==1.4.2
+xgboost==2.0.3
+
+# Manipulação de dados
+numpy==1.26.4
+pandas==2.2.2
+
+# Persistência dos modelos treinados
+joblib==1.4.2
+
+# Conexão com o Elasticsearch para buscar eventos
+elasticsearch==8.13.0
+
+# Variáveis de ambiente
+python-dotenv==1.0.1
