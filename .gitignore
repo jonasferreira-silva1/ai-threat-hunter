@@ -23,3 +23,6 @@ venv/
 # Datasets de ML (arquivos grandes — usar Git LFS ou link externo)
 ml/datasets/*.csv
 ml/datasets/*.pcap
+
+# Artefatos dos modelos treinados (gerados em runtime)
+ml/artifacts/*.joblib

@@ -1,0 +1,32 @@
+# =============================================================
+# Dockerfile para execução dos testes
+# Ambiente isolado — não depende do ELK Stack para rodar
+#
+# Nota: xgboost não é incluído aqui pois os testes unitários
+# não dependem dele. O treinamento real usa o requirements.txt
+# completo do módulo ml/.
+# =============================================================
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Instala dependências mínimas para os testes
+# (sem xgboost para manter a imagem leve e o build rápido)
+RUN pip install --no-cache-dir \
+    scikit-learn==1.4.2 \
+    numpy==1.26.4 \
+    pandas==2.2.2 \
+    joblib==1.4.2 \
+    python-dotenv==1.0.1 \
+    pytest==8.2.0 \
+    pytest-cov==5.0.0
+
+# Copia o código fonte
+COPY ml/ ml/
+COPY collector/ collector/
+COPY tests/ tests/
+COPY pytest.ini .
+
+# Roda todos os testes unitários com relatório de cobertura
+CMD ["pytest", "-m", "unit", "--cov=ml", "--cov=collector", "--cov-report=term-missing", "-v"]

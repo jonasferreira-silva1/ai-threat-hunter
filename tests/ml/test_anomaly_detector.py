@@ -89,19 +89,27 @@ class TestDeteccao:
         assert valores_unicos.issubset({1, -1})
 
     @pytest.mark.unit
-    def test_evento_extremamente_anomalo_tem_score_alto(self, detector_treinado):
+    def test_evento_extremamente_anomalo_tem_score_alto(self, detector_treinado, lista_eventos_normais):
         """
-        Evento com valores extremos deve ter score de anomalia alto.
-        Cria um vetor com valores muito distantes do padrão normal.
+        Evento com valores extremos deve ter score de anomalia alto
+        quando comparado ao baseline normal.
+        Treina com dados normais e avalia o vetor extremo junto com eles.
         """
-        detector, _ = detector_treinado
+        detector, preprocessor = detector_treinado
+        X_normal = preprocessor.transform(lista_eventos_normais)
 
         # Vetor com valores extremos — muito diferente do baseline normal
-        X_anomalo = np.array([[99999.0, 99999.0, 99999.0, 99999.0, 3.0, 6.0, 500.0, 0.0, 0.0, 0.0]])
-        score = detector.score_anomalia(X_anomalo)[0]
+        X_extremo = np.array([[99999.0, 99999.0, 99999.0, 99999.0, 3.0, 6.0, 500.0, 0.0, 0.0, 0.0]])
 
-        # Score deve ser alto (acima de 0.5) para evento claramente anômalo
-        assert score > 0.5, f"Score esperado > 0.5, obtido: {score}"
+        # Avalia junto com os dados normais para que a normalização min-max funcione
+        X_conjunto = np.vstack([X_normal, X_extremo])
+        scores = detector.score_anomalia(X_conjunto)
+
+        # O último score (evento extremo) deve ser o mais alto do conjunto
+        score_extremo = scores[-1]
+        assert score_extremo == scores.max(), (
+            f"Score do evento extremo ({score_extremo:.3f}) deveria ser o máximo do conjunto"
+        )
 
     @pytest.mark.unit
     def test_is_anomalo_com_threshold_customizado(self, detector_treinado, lista_eventos_normais):
@@ -113,8 +121,8 @@ class TestDeteccao:
         todos_anomalos = detector.is_anomalo(X, threshold=0.0)
         assert todos_anomalos.all()
 
-        # Com threshold 1.0, nenhum evento é anômalo (score nunca chega a 1.0 exato)
-        nenhum_anomalo = detector.is_anomalo(X, threshold=1.0)
+        # Com threshold muito alto (acima do máximo possível), nenhum é anômalo
+        nenhum_anomalo = detector.is_anomalo(X, threshold=1.01)
         assert not nenhum_anomalo.any()
 
     @pytest.mark.unit

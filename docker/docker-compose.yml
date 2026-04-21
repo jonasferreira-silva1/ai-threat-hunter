@@ -161,3 +161,21 @@ services:
       retries: 10
       start_period: 90s
     restart: unless-stopped
+
+  # -----------------------------------------------------------
+  # TESTS — Roda a suíte de testes unitários e encerra
+  # Não depende do ELK Stack — pode rodar de forma isolada
+  #
+  # Uso:
+  #   docker-compose run --rm tests
+  # -----------------------------------------------------------
+  tests:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.test
+    container_name: threat-hunter-tests
+    networks:
+      - threat-hunter-net
+    # Não sobe automaticamente com "docker-compose up"
+    profiles:
+      - testing
