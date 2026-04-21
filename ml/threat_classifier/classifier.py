@@ -137,8 +137,10 @@ class ThreatClassifier:
         """
         self._verificar_treinamento()
         y_pred = self.modelo.predict(X_test)
-        nomes_classes = [CLASSES_AMEACA[i] for i in sorted(CLASSES_AMEACA.keys())]
-        return classification_report(y_test, y_pred, target_names=nomes_classes)
+        # Usa apenas as classes presentes nos dados de teste para evitar erros
+        classes_presentes = sorted(set(y_test) | set(y_pred))
+        nomes_classes = [CLASSES_AMEACA[i] for i in classes_presentes if i in CLASSES_AMEACA]
+        return classification_report(y_test, y_pred, labels=classes_presentes, target_names=nomes_classes)
 
     # ----------------------------------------------------------
     # Predição

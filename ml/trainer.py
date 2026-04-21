@@ -172,13 +172,15 @@ def gerar_dados_sinteticos(n_amostras: int = 10_000) -> list[dict]:
         eventos.append({
             "timestamp":      pd.Timestamp.now().isoformat(),
             "event_type":     np.random.choice(["auth_success", "network_connection", "http_request"], p=[0.3, 0.5, 0.2]),
-            "count":          int(np.random.normal(10, 5).clip(1, 50)),
-            "bytes_sent":     int(np.random.exponential(1000).clip(0, 100_000)),
-            "bytes_received": int(np.random.exponential(5000).clip(0, 500_000)),
-            "duration_ms":    float(np.random.exponential(200).clip(0, 10_000)),
+            "count":          int(np.clip(np.random.normal(10, 5), 1, 50)),
+            "bytes_sent":     int(np.clip(np.random.exponential(1000), 0, 100_000)),
+            "bytes_received": int(np.clip(np.random.exponential(5000), 0, 500_000)),
+            "duration_ms":    float(np.clip(np.random.exponential(200), 0, 10_000)),
             "protocol":       np.random.choice(["TCP", "UDP", "ICMP"], p=[0.7, 0.2, 0.1]),
             "category":       np.random.choice(["authentication", "network", "application"], p=[0.3, 0.5, 0.2]),
             "http_status":    int(np.random.choice([200, 301, 404, 500], p=[0.8, 0.1, 0.08, 0.02])),
+            "severity":       None,
+            "ml_score":       -1,
         })
 
     return eventos
