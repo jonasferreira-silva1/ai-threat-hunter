@@ -134,13 +134,34 @@ class ThreatClassifier:
 
         Returns:
             String com precision, recall e F1-score por classe.
+
+        Nota sobre dados sintéticos:
+            Com dados sintéticos desbalanceados (usados nos testes e no fallback
+            do trainer), algumas classes de ataque raras podem não aparecer nas
+            predições — o modelo simplesmente não vê exemplos suficientes delas.
+            Isso gera UndefinedMetricWarning no sklearn, que é suprimido com
+            zero_division=0 (precision/recall ficam 0.0 para essas classes).
+
+            Em produção, retreine com o CICIDS2017 completo para garantir
+            representação adequada de todas as classes.
         """
         self._verificar_treinamento()
         y_pred = self.modelo.predict(X_test)
-        # Usa apenas as classes presentes nos dados de teste para evitar erros
+
+        # Usa apenas as classes presentes nos dados para evitar erros de shape
         classes_presentes = sorted(set(y_test) | set(y_pred))
         nomes_classes = [CLASSES_AMEACA[i] for i in classes_presentes if i in CLASSES_AMEACA]
-        return classification_report(y_test, y_pred, labels=classes_presentes, target_names=nomes_classes)
+
+        return classification_report(
+            y_test,
+            y_pred,
+            labels=classes_presentes,
+            target_names=nomes_classes,
+            # zero_division=0: classes sem predições recebem 0.0 em vez de warning.
+            # Comportamento esperado com dados sintéticos — não é um bug.
+            # Com CICIDS2017 completo esse parâmetro não faz diferença prática.
+            zero_division=0,
+        )
 
     # ----------------------------------------------------------
     # Predição

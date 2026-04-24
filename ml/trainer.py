@@ -247,7 +247,11 @@ def treinar_classificador(preprocessor: Preprocessor) -> ThreatClassifier:
         # Fallback: dados sintéticos com labels aleatórios para demonstração
         logger.warning(
             f"Dataset não encontrado em {caminho_cicids}. "
-            "Usando dados sintéticos. Baixe o CICIDS2017 para resultados reais."
+            "Usando dados sintéticos. Baixe o CICIDS2017 para resultados reais.\n"
+            "ATENÇÃO: com dados sintéticos, classes de ataque raras podem não\n"
+            "aparecer nas predições (desbalanceamento). O modelo treinado aqui\n"
+            "serve apenas para validar o pipeline — não use em produção.\n"
+            "Retreine com o CICIDS2017 completo antes de qualquer uso real."
         )
         eventos_sinteticos = gerar_dados_sinteticos(5_000)
         X = preprocessor.transform(eventos_sinteticos)

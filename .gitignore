@@ -26,3 +26,6 @@ ml/datasets/*.pcap
 
 # Artefatos dos modelos treinados (gerados em runtime)
 ml/artifacts/*.joblib
+
+# Pasta da IDE Kiro (configurações locais)
+.kiro/
