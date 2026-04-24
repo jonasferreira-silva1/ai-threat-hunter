@@ -1,0 +1,60 @@
+Com base na análise de investigação fornecida, gere um relatório formal de incidente de segurança em formato JSON.
+
+## Análise de Investigação
+
+{analise_investigacao}
+
+## Contexto Adicional
+
+- Score de Risco: {score}
+- Severidade: {severidade}
+- Classe de Ameaça: {classe_ameaca}
+- Técnicas MITRE ATT&CK Identificadas: {tecnicas_mitre}
+- Timestamp de Geração: {timestamp_geracao}
+- ID do Incidente: {incident_id}
+
+## Instruções para o Relatório
+
+Gere EXCLUSIVAMENTE um objeto JSON válido com a seguinte estrutura, sem texto adicional antes ou depois:
+
+```json
+{
+  "incident_id": "<use o ID fornecido acima, formato INC-YYYY-NNNN>",
+  "severidade": "<CRITICO | ALTO | MEDIO | BAIXO | INFO>",
+  "resumo": "<1 a 2 frases descrevendo o incidente de forma clara e objetiva>",
+  "linha_do_tempo": [
+    {
+      "timestamp": "<ISO 8601 UTC>",
+      "evento": "<descrição do evento>",
+      "significancia": "<por que este evento é relevante>"
+    }
+  ],
+  "impacto_estimado": "<descrição do impacto potencial nos sistemas, dados e operações>",
+  "acoes_recomendadas": [
+    "<ação 1 — específica e acionável>",
+    "<ação 2>",
+    "<ação N>"
+  ],
+  "tecnicas_mitre": ["<T1110>", "<T1078>"],
+  "confianca": <float entre 0.0 e 1.0>,
+  "timestamp_geracao": "<ISO 8601 UTC>",
+  "raw_llm_response": "<deixe este campo vazio — será preenchido automaticamente>"
+}
+```
+
+## Regras Obrigatórias
+
+1. O campo `incident_id` DEVE seguir o formato `INC-YYYY-NNNN` (ex: INC-2025-0001)
+2. O campo `severidade` DEVE ser um dos valores: CRITICO, ALTO, MEDIO, BAIXO, INFO
+3. O campo `resumo` DEVE ter entre 1 e 2 frases, em português
+4. O campo `linha_do_tempo` DEVE estar ordenado cronologicamente (timestamp crescente)
+5. O campo `linha_do_tempo` DEVE conter pelo menos 1 entrada
+6. O campo `impacto_estimado` DEVE ser uma string não-vazia descrevendo o impacto
+7. O campo `acoes_recomendadas` DEVE ser uma lista com pelo menos 1 ação
+8. Para incidentes com score >= 80 (CRITICO), `acoes_recomendadas` DEVE incluir uma ação de bloqueio de firewall
+9. O campo `tecnicas_mitre` DEVE ser uma lista (pode ser vazia se nenhuma técnica for identificada)
+10. O campo `confianca` DEVE ser um número entre 0.0 e 1.0
+11. O campo `timestamp_geracao` DEVE ser uma string ISO 8601 UTC válida
+12. Responda APENAS com o JSON — sem markdown, sem explicações, sem texto adicional
+
+Gere o relatório agora:

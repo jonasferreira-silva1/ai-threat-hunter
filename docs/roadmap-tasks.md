@@ -6,7 +6,7 @@ Implementação incremental das três camadas restantes do AI-Powered Threat Hun
 
 ## Tasks
 
-- [ ] 1. Estrutura base da Camada 4 — Agente LLM
+- [x] 1. Estrutura base da Camada 4 — Agente LLM
   - Criar `agent/__init__.py` exportando as classes públicas da camada
   - Criar `agent/prompts/investigation.txt` com o prompt de investigação de incidente
   - Criar `agent/prompts/report.txt` com o prompt de geração de relatório estruturado
