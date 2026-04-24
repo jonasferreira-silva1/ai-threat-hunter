@@ -13,8 +13,8 @@ Implementação incremental das três camadas restantes do AI-Powered Threat Hun
   - Criar `tests/agent/__init__.py` e `tests/agent/conftest.py` com fixtures compartilhadas (mock ES, mock LLM)
   - _Requirements: 15.4_
 
-- [ ] 2. Implementar MITREMapper
-  - [ ] 2.1 Criar `agent/mitre_mapper.py` com a classe `MITREMapper`
+- [x] 2. Implementar MITREMapper
+  - [x] 2.1 Criar `agent/mitre_mapper.py` com a classe `MITREMapper`
     - Implementar `MAPEAMENTO` dict com todas as 6 classes de ameaça → técnicas ATT&CK
     - Implementar `mapear(classe_ameaca, contexto) -> list[str]`
     - Retornar lista vazia para classes desconhecidas sem lançar exceção
