@@ -8,11 +8,15 @@ Responsabilidade:
     Para incidentes críticos (score >= 80), garante que acoes_recomendadas
     inclui pelo menos uma ação de bloqueio de firewall.
 
-Requisitos: 6.1, 6.2, 6.3, 6.4, 6.5
+    Também persiste o IncidentReport no Elasticsearch (índice `incidents`)
+    e marca o evento original como analisado (`agent_analyzed=True`).
+
+Requisitos: 6.1, 6.2, 6.3, 6.4, 6.5, 15.4
 """
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import logging
 import re
@@ -221,6 +225,69 @@ class ReportGenerator:
             timestamp_geracao=ts_geracao,
             raw_llm_response=resposta_llm,
         )
+
+    def persistir(
+        self,
+        report: IncidentReport,
+        evento_id: str,
+        es_client: object,
+    ) -> bool:
+        """
+        Persiste o IncidentReport no Elasticsearch e marca o evento original como analisado.
+
+        Indexa o relatório no índice `incidents` usando `incident_id` como document ID.
+        Em seguida, atualiza o campo `agent_analyzed=True` no evento original em
+        `threat-events-*` usando o `evento_id` fornecido.
+
+        Em caso de qualquer falha do Elasticsearch, loga o erro e retorna False
+        sem lançar exceção.
+
+        Args:
+            report:    IncidentReport a persistir.
+            evento_id: ID do documento original em `threat-events-*`.
+            es_client: Instância do cliente elasticsearch-py já configurado.
+
+        Returns:
+            True se ambas as operações foram bem-sucedidas, False caso contrário.
+        """
+        try:
+            dados = dataclasses.asdict(report)
+            es_client.index(
+                index="incidents",
+                id=report.incident_id,
+                body=dados,
+            )
+            logger.debug(
+                "IncidentReport '%s' indexado com sucesso no índice 'incidents'.",
+                report.incident_id,
+            )
+        except Exception as exc:
+            logger.error(
+                "Falha ao indexar IncidentReport '%s' no Elasticsearch: %s",
+                report.incident_id,
+                exc,
+            )
+            return False
+
+        try:
+            es_client.update(
+                index="threat-events-*",
+                id=evento_id,
+                body={"doc": {"agent_analyzed": True}},
+            )
+            logger.debug(
+                "Evento '%s' marcado como agent_analyzed=True.",
+                evento_id,
+            )
+        except Exception as exc:
+            logger.error(
+                "Falha ao atualizar agent_analyzed no evento '%s': %s",
+                evento_id,
+                exc,
+            )
+            return False
+
+        return True
 
     # ----------------------------------------------------------
     # Métodos internos

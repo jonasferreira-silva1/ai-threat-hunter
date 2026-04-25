@@ -243,7 +243,7 @@ class LLMAgent:
 
         logger.debug("LLMAgent inicializado com modelo '%s'.", model)
 
-    def investigar(self, contexto: ThreatContext) -> IncidentReport:
+    def investigar(self, contexto: ThreatContext, es_client: object = None) -> IncidentReport:
         """
         Investiga um incidente de segurança e retorna um relatório estruturado.
 
@@ -256,8 +256,14 @@ class LLMAgent:
 
         A linha_do_tempo do relatório é ordenada por timestamp crescente.
 
+        Se `es_client` for fornecido, persiste o relatório no Elasticsearch
+        após a geração, chamando `ReportGenerator.persistir()`.
+
         Args:
-            contexto: ThreatContext com evento atual, correlacionados e histórico.
+            contexto:  ThreatContext com evento atual, correlacionados e histórico.
+            es_client: Cliente Elasticsearch opcional. Se fornecido, o relatório
+                       é persistido no índice `incidents` e o evento original é
+                       marcado com `agent_analyzed=True`.
 
         Returns:
             IncidentReport com análise completa ou com confianca=0.0 em falha.
@@ -335,6 +341,10 @@ class LLMAgent:
             report.confianca,
             report.severidade,
         )
+
+        if es_client is not None:
+            self._report_generator.persistir(report, contexto.evento_id, es_client)
+
         return report
 
     # ----------------------------------------------------------

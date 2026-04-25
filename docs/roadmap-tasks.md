@@ -102,8 +102,8 @@ Implementação incremental das três camadas restantes do AI-Powered Threat Hun
     - Para qualquer IncidentReport com `score >= 80`, `acoes_recomendadas` contém pelo menos uma ação de bloqueio de firewall
     - **Validates: Requirements 6.4**
 
-- [ ] 5. Persistência e integração da Camada 4
-  - [ ] 5.1 Implementar persistência do IncidentReport no Elasticsearch
+- [x] 5. Persistência e integração da Camada 4
+  - [x] 5.1 Implementar persistência do IncidentReport no Elasticsearch
     - Adicionar método `persistir(report: IncidentReport)` ao `ReportGenerator` (ou `LLMAgent`)
     - Indexar no índice `incidents` com `incident_id` como document ID
     - Atualizar campo `agent_analyzed=True` no evento original em `threat-events-*`
