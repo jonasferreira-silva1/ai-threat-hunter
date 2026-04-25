@@ -53,8 +53,8 @@ Implementação incremental das três camadas restantes do AI-Powered Threat Hun
     - Para qualquer evento e score válidos com ES indisponível, `construir()` retorna ThreatContext com listas vazias sem exceção
     - **Validates: Requirements 3.3**
 
-- [ ] 4. Implementar LLMAgent e ReportGenerator
-  - [ ] 4.1 Criar `agent/report_generator.py` com a classe `ReportGenerator`
+- [x] 4. Implementar LLMAgent e ReportGenerator
+  - [x] 4.1 Criar `agent/report_generator.py` com a classe `ReportGenerator`
     - Implementar geração de `incident_id` no formato `INC-YYYY-NNNN` (sequencial por ano)
     - Implementar `gerar(contexto, resposta_llm) -> IncidentReport`
     - Garantir `acoes_recomendadas` como lista não-vazia
@@ -63,7 +63,7 @@ Implementação incremental das três camadas restantes do AI-Powered Threat Hun
     - Para `score >= 80`, incluir pelo menos uma ação de bloqueio de firewall em `acoes_recomendadas`
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [ ] 4.2 Criar `agent/llm_agent.py` com a classe `LLMAgent`
+  - [x] 4.2 Criar `agent/llm_agent.py` com a classe `LLMAgent`
     - Implementar `__init__(self, api_key: str, model: str = "claude-3-5-sonnet-20241022")`
     - Implementar `investigar(contexto: ThreatContext) -> IncidentReport`
     - Montar prompt com dados do `ThreatContext` (sanitizar dados controlados pelo usuário)
