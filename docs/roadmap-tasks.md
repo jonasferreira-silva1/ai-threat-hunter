@@ -30,8 +30,8 @@ Implementação incremental das três camadas restantes do AI-Powered Threat Hun
     - Para qualquer string fora do conjunto conhecido, `mapear()` retorna `[]` sem exceção
     - **Validates: Requirements 4.7**
 
-- [ ] 3. Implementar ContextBuilder
-  - [ ] 3.1 Criar `agent/context_builder.py` com a classe `ContextBuilder`
+- [x] 3. Implementar ContextBuilder
+  - [x] 3.1 Criar `agent/context_builder.py` com a classe `ContextBuilder`
     - Implementar `__init__(self, es_client: Elasticsearch)`
     - Implementar `construir(evento, score) -> ThreatContext`
     - Buscar eventos correlacionados do mesmo `source_ip` nos últimos 10 minutos (size=50)
