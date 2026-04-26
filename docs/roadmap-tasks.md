@@ -125,8 +125,8 @@ Implementação incremental das três camadas restantes do AI-Powered Threat Hun
   - Definir o dataclass `ResponseAction` em `response/__init__.py` ou `response/models.py`
   - _Requirements: 15.5_
 
-- [ ] 8. Implementar FirewallManager
-  - [ ] 8.1 Criar `response/firewall.py` com a classe `FirewallManager`
+- [x] 8. Implementar FirewallManager
+  - [x] 8.1 Criar `response/firewall.py` com a classe `FirewallManager`
     - Implementar `bloquear_ip(ip: str, duracao_segundos: int = 3600) -> ResponseAction`
     - Executar `iptables -I INPUT -s {ip} -j DROP` via `subprocess`
     - Verificar se IP já está bloqueado antes de adicionar regra (idempotência)
