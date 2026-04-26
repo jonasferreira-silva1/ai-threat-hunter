@@ -114,12 +114,12 @@ Implementação incremental das três camadas restantes do AI-Powered Threat Hun
     - Verificar que `agent_analyzed=True` é atualizado no evento original
     - _Requirements: 3.1, 5.1, 6.1_
 
-- [ ] 6. Checkpoint — Camada 4 completa
+- [x] 6. Checkpoint — Camada 4 completa
   - Garantir que todos os testes em `tests/agent/` passam
   - Verificar que `LLMAgent.investigar()` nunca lança exceção para qualquer entrada válida
   - Perguntar ao usuário se há ajustes antes de prosseguir para a Camada 5.
 
-- [ ] 7. Estrutura base da Camada 5 — Resposta Automática
+- [x] 7. Estrutura base da Camada 5 — Resposta Automática
   - Criar `response/__init__.py` exportando as classes públicas da camada
   - Criar `tests/response/__init__.py` e `tests/response/conftest.py` com fixtures (mock subprocess, mock HTTP)
   - Definir o dataclass `ResponseAction` em `response/__init__.py` ou `response/models.py`

@@ -36,11 +36,14 @@ Ele não apenas detecta — ele **investiga, entende, explica e age**.
 [Rede/Sistema] → [Coleta] → [Processamento] → [IA Detecta] → [Agente Analisa] → [Ação + Relatório]
 ```
 
+> ✅ **Camadas 1–4 implementadas e testadas** — pipeline completo de coleta, normalização, ML e agente LLM funcionando com 66+ testes automatizados passando.
+> 🔧 **Camadas 5–6 em desenvolvimento ativo** — resposta automática e dashboard.
+
 ---
 
 ## Como Funciona: As 6 Camadas
 
-### 📡 Camada 1 — Coleta de Dados
+### 📡 Camada 1 — Coleta de Dados ✅
 
 Três fontes simultâneas alimentam o sistema:
 
@@ -52,7 +55,7 @@ Tudo centralizado no **Elasticsearch** via **Logstash**.
 
 ---
 
-### ⚙️ Camada 2 — Normalização
+### ⚙️ Camada 2 — Normalização ✅
 
 Dados de fontes diferentes chegam em formatos diferentes. O Logstash transforma tudo num padrão unificado:
 
@@ -70,30 +73,30 @@ Limpos e prontos para a IA analisar.
 
 ---
 
-### 🤖 Camada 3 — Detecção por Machine Learning
+### 🤖 Camada 3 — Detecção por Machine Learning ✅
 
 Dois modelos trabalham em paralelo:
 
 **Modelo 1 — Detecção de Anomalias (Não Supervisionado)**
-- Algoritmo: Isolation Forest / Autoencoder
+- Algoritmo: Isolation Forest
 - Aprende o comportamento normal da rede durante 7-14 dias
 - Qualquer desvio gera alerta — detecta o que regras fixas nunca pegariam
 
 **Modelo 2 — Classificação de Ameaças (Supervisionado)**
-- Algoritmo: Random Forest / XGBoost
-- Treinado com datasets reais: NSL-KDD, CICIDS2017
+- Algoritmo: Random Forest
+- Treinado com datasets reais: CICIDS2017
 - Classifica: Brute Force, Port Scanning, DDoS, Lateral Movement, Data Exfiltration, Privilege Escalation
 
 Juntos, geram um **score de risco de 0 a 100** para cada evento.
 
 ---
 
-### 🧠 Camada 4 — Agente LLM (O Diferencial)
+### 🧠 Camada 4 — Agente LLM (O Diferencial) ✅
 
 Quando um alerta com score alto é gerado, um agente LLM (Claude/GPT-4) recebe o contexto completo e conduz uma investigação:
 
 ```
-🚨 INCIDENTE #2024-042 — SEVERIDADE: CRÍTICA
+🚨 INCIDENTE #2026-042 — SEVERIDADE: CRÍTICA
 
 RESUMO: Possível ataque de Brute Force seguido de escalonamento de privilégio.
 
@@ -115,7 +118,7 @@ MAPEAMENTO MITRE ATT&CK:
 
 ---
 
-### ⚡ Camada 5 — Resposta Automática
+### ⚡ Camada 5 — Resposta Automática 🔧 Em desenvolvimento
 
 Para alertas críticos, o sistema age antes do analista ler o relatório:
 
@@ -128,7 +131,7 @@ Para alertas críticos, o sistema age antes do analista ler o relatório:
 
 ---
 
-### 📊 Camada 6 — Dashboard
+### 📊 Camada 6 — Dashboard 🔧 Em desenvolvimento
 
 Kibana + interface própria para supervisão humana:
 
@@ -144,16 +147,16 @@ Kibana + interface própria para supervisão humana:
 
 | Camada | Tecnologia |
 |---|---|
-| Captura de tráfego | Zeek / Suricata |
-| Ingestão de logs | Logstash |
+| Captura de logs | Python (syslog collector) |
+| Ingestão e normalização | Logstash |
 | Armazenamento | Elasticsearch |
 | Visualização | Kibana |
-| Machine Learning | scikit-learn, XGBoost |
-| Agente LLM | Claude API / OpenAI GPT-4 |
+| Machine Learning | scikit-learn (Isolation Forest + Random Forest) |
+| Agente LLM | Anthropic Claude API / OpenAI GPT-4 |
 | Resposta automática | Python + iptables/nftables |
 | Notificações | Slack API / Telegram Bot |
 | Infraestrutura | Docker + Docker Compose |
-| Laboratório | VMs Linux/Windows + Kali Linux |
+| Testes | pytest + Hypothesis (property-based testing) |
 
 ---
 
@@ -161,78 +164,122 @@ Kibana + interface própria para supervisão humana:
 
 ```
 ai-threat-hunter/
-├── docker/                  # Docker Compose e configurações de infraestrutura
+├── docker/                        # Infraestrutura ELK Stack
 │   ├── docker-compose.yml
 │   ├── elasticsearch/
 │   ├── logstash/
+│   │   └── pipeline/logstash.conf
 │   └── kibana/
-├── collector/               # Agentes de coleta de dados
-│   ├── zeek/
-│   ├── suricata/
+├── collector/                     # Camada 1 — Coleta de logs
 │   └── syslog/
-├── ml/                      # Modelos de Machine Learning
+│       └── log_collector.py
+├── ml/                            # Camada 3 — Machine Learning
 │   ├── anomaly_detection/
+│   │   └── detector.py            # Isolation Forest
 │   ├── threat_classifier/
-│   └── datasets/
-├── agent/                   # Agente LLM de investigação
-│   ├── llm_agent.py
-│   ├── prompts/
-│   └── mitre/
-├── response/                # Módulo de resposta automática
-│   ├── firewall.py
-│   ├── isolation.py
-│   └── notifications.py
-├── dashboard/               # Interface web própria
-│   ├── frontend/
-│   └── backend/
-├── lab/                     # Scripts do laboratório de simulação
-│   ├── attacker/
-│   └── victim/
-├── docs/                    # Documentação técnica
+│   │   └── classifier.py          # Random Forest
+│   ├── preprocessor.py
+│   ├── scorer.py                  # Score de risco 0-100
+│   └── trainer.py
+├── agent/                         # Camada 4 — Agente LLM
+│   ├── context_builder.py         # Busca contexto no Elasticsearch
+│   ├── mitre_mapper.py            # Mapeamento MITRE ATT&CK
+│   ├── llm_agent.py               # Orquestrador Claude/GPT-4
+│   ├── report_generator.py        # Geração do relatório de incidente
+│   └── prompts/                   # Templates de prompt
+├── response/                      # Camada 5 — Resposta automática
+│   ├── firewall.py                # (em desenvolvimento)
+│   ├── isolation.py               # (em desenvolvimento)
+│   ├── notifications.py           # (em desenvolvimento)
+│   └── orchestrator.py            # (em desenvolvimento)
+├── dashboard/                     # Camada 6 — Dashboard
+│   ├── backend/                   # (em desenvolvimento)
+│   └── frontend/                  # (em desenvolvimento)
+├── tests/                         # Testes automatizados
+│   ├── collector/
+│   ├── ml/
+│   ├── agent/
+│   └── response/
+├── docs/                          # Documentação técnica
+│   ├── arquitetura.md
+│   ├── roadmap-design.md
+│   ├── roadmap-requirements.md
+│   └── roadmap-tasks.md
 └── README.md
 ```
 
 ---
 
-## Laboratório de Demonstração
-
-O projeto inclui um laboratório virtual completo para demonstração:
-
-- **Rede vítima** — VMs com Linux/Windows simulando uma empresa real
-- **Máquina atacante** — Kali Linux executando ataques reais (Nmap, Hydra, Metasploit)
-- **Sistema de defesa** — O Threat Hunter rodando e reagindo em tempo real
-
----
-
 ## Como Rodar
 
+### Pré-requisitos
+
+- Docker e Docker Compose instalados
+- Python 3.11+
+- Chave de API Anthropic ou OpenAI (para o agente LLM)
+
+### 1. Suba a infraestrutura
+
 ```bash
-# Clone o repositório
 git clone https://github.com/seu-usuario/ai-threat-hunter.git
 cd ai-threat-hunter
 
-# Suba a infraestrutura
 docker-compose -f docker/docker-compose.yml up -d
 
 # Verifique os serviços
-docker-compose ps
+docker-compose -f docker/docker-compose.yml ps
 
-# Acesse o Kibana
-# http://localhost:5601
+# Acesse o Kibana em http://localhost:5601
+```
+
+### 2. Instale as dependências Python
+
+```bash
+pip install -r ml/requirements.txt
+pip install anthropic hypothesis pytest
+```
+
+### 3. Configure as variáveis de ambiente
+
+```bash
+# Copie o arquivo de exemplo e preencha suas credenciais
+cp .env.example .env
+# Edite o .env com ANTHROPIC_API_KEY, ELASTIC_HOST, etc.
+```
+
+### 4. Treine os modelos de ML
+
+```bash
+# Treina com dados sintéticos (fallback automático sem Elasticsearch)
+python -m ml.trainer
+```
+
+### 5. Rode os testes
+
+```bash
+# Todos os testes
+pytest
+
+# Apenas testes unitários
+pytest -m unit
+
+# Testes de uma camada específica
+pytest tests/ml/
+pytest tests/agent/
 ```
 
 ---
 
-## Roadmap
+## Status do Projeto
 
-| Semana | Entrega |
-|---|---|
-| 1-2 | Ambiente de laboratório + coleta de logs funcionando |
-| 3-4 | Pipeline ELK configurado e dados fluindo |
-| 5-6 | Modelo ML treinado e detectando anomalias |
-| 7-8 | Integração do agente LLM + geração de relatórios |
-| 9-10 | Resposta automática + dashboard |
-| 11-12 | Simulações de ataque + documentação final |
+| Camada | Status | Testes |
+|---|---|---|
+| 1 — Coleta de logs | ✅ Completo | ✅ |
+| 2 — Normalização ELK | ✅ Completo | ✅ |
+| 3 — Machine Learning | ✅ Completo | ✅ |
+| 4 — Agente LLM | ✅ Completo | ✅ |
+| 5 — Resposta Automática | 🔧 Em desenvolvimento | 🔧 |
+| 6 — Dashboard | 🔧 Em desenvolvimento | 🔧 |
 
 ---
 
@@ -243,8 +290,8 @@ A maioria dos portfólios de segurança tem scanners de senha e packet sniffers 
 Este projeto combina quatro áreas valorizadas simultaneamente:
 
 - **Segurança defensiva** — detecção e resposta a incidentes reais
-- **Machine Learning** — modelos supervisionados e não supervisionados
-- **LLMs aplicados** — agente investigativo com raciocínio contextual
+- **Machine Learning** — modelos supervisionados e não supervisionados treinados com datasets reais (CICIDS2017)
+- **LLMs aplicados** — agente investigativo com raciocínio contextual e mapeamento MITRE ATT&CK
 - **Automação de resposta** — ação autônoma em menos de 30 segundos
 
 Exatamente o perfil que o mercado de 2026 está contratando.
@@ -257,6 +304,15 @@ Exatamente o perfil que o mercado de 2026 está contratando.
 - Tempo de resposta automática: **< 30 segundos**
 - Taxa de falsos positivos: **< 5%** (após período de aprendizado)
 - Cobertura MITRE ATT&CK: **15+ técnicas mapeadas**
+
+---
+
+## Documentação
+
+- [`docs/arquitetura.md`](docs/arquitetura.md) — Arquitetura detalhada do sistema
+- [`docs/roadmap-design.md`](docs/roadmap-design.md) — Design técnico completo com contratos de interface
+- [`docs/roadmap-requirements.md`](docs/roadmap-requirements.md) — Requisitos e critérios de aceite
+- [`docs/roadmap-tasks.md`](docs/roadmap-tasks.md) — Plano de implementação com status das tarefas
 
 ---
 
