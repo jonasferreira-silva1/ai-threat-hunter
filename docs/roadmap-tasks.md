@@ -164,8 +164,8 @@ Implementação incremental das três camadas restantes do AI-Powered Threat Hun
     - Para qualquer IPv4 válido com subprocess falhando por permissão, `bloquear_ip()` retorna `status="failed"` sem lançar exceção
     - **Validates: Requirements 7.6**
 
-- [ ] 9. Implementar IsolationManager
-  - [ ] 9.1 Criar `response/isolation.py` com a classe `IsolationManager`
+- [x] 9. Implementar IsolationManager
+  - [x] 9.1 Criar `response/isolation.py` com a classe `IsolationManager`
     - Implementar `isolar_host(hostname: str) -> ResponseAction`
     - Adicionar regras iptables para dropar todo tráfego do host exceto porta 22 do bastion
     - Salvar estado de rede anterior do host para permitir reversão
@@ -174,18 +174,18 @@ Implementação incremental das três camadas restantes do AI-Powered Threat Hun
     - Retornar `ResponseAction(status="failed")` em caso de falha (nunca lançar exceção)
     - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-  - [ ]* 9.2 Escrever testes unitários para IsolationManager
+  - [x]* 9.2 Escrever testes unitários para IsolationManager
     - Testar `isolar_host()` com mock de subprocess
     - Testar `desfazer_isolamento()` restaura estado anterior
     - Testar falha retorna `status="failed"` sem exceção
     - _Requirements: 8.1–8.4_
 
-  - [ ]* 9.3 Escrever property test — isolamento é reversível
+  - [x]* 9.3 Escrever property test — isolamento é reversível
     - **Property 18: IsolationManager isolamento é reversível (round-trip)**
     - Para qualquer hostname válido, após `isolar_host()` seguido de `desfazer_isolamento()`, o host tem a mesma conectividade que antes
     - **Validates: Requirements 8.2, 8.4**
 
-  - [ ]* 9.4 Escrever property test — IsolationManager resiliente a falhas
+  - [x]* 9.4 Escrever property test — IsolationManager resiliente a falhas
     - **Property 19: IsolationManager é resiliente a falhas**
     - Para qualquer hostname, se `isolar_host()` falhar, retorna `status="failed"` sem lançar exceção
     - **Validates: Requirements 8.3**
